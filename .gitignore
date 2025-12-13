@@ -1,0 +1,11 @@
+*.exe
+*.o
+*.out
+build/
+gtest_build/
+.vscode/
+*.user
+*~
+.DS_Store
+*.log
+nul
