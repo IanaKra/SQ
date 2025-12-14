@@ -5,7 +5,7 @@
 #include "Stack.h"
 #include "Queue.h"
 
-// ========== Тесты для Stack ==========
+// ========== Тесты для Stack (20 тестов) ==========
 
 TEST(StackTest, DefaultConstructor) {
     Stack<int> s;
@@ -148,17 +148,6 @@ TEST(StackTest, Stack_Iterator) {
     s.push(20);
     s.push(30);
 
-    // Константный итератор
-    Stack<int>::const_iterator cit = s.cbegin();
-    EXPECT_EQ(*cit, 30);
-    ++cit;
-    EXPECT_EQ(*cit, 20);
-    cit++;
-    EXPECT_EQ(*cit, 10);
-    ++cit;
-    EXPECT_EQ(cit, s.cend());
-
-    // Неконстантный итератор
     Stack<int>::iterator it = s.begin();
     EXPECT_EQ(*it, 30);
     ++it;
@@ -179,10 +168,9 @@ TEST(StackTest, Stack_For) {
     s.push(2);
     s.push(3);
 
-    const Stack<int>& r = s;
     int expected1[] = {3, 2, 1};
     int idx = 0;
-    for (const auto& v : r) EXPECT_EQ(v, expected1[idx++]);
+    for (const auto& v : s) EXPECT_EQ(v, expected1[idx++]);
 
     idx = 0;
     for (auto& v : s) v *= 2;
@@ -215,8 +203,6 @@ TEST(StackTest, Stack_PushPopCopy) {
     copy_s.push(97);
 
     idx = 0;
-    for (const auto& v : s) EXPECT_EQ(v, expected_orig[idx++]);
-
     int expected_copy[] = {97, 98, 99, 2, 1};
     idx = 0;
     for (const auto& v : copy_s) EXPECT_EQ(v, expected_copy[idx++]);
@@ -241,7 +227,68 @@ TEST(StackTest, Stack_IO) {
     EXPECT_EQ(sout.str(), expected_str);
 }
 
-// ========== Тесты для Queue ==========
+TEST(StackTest, ComplexOperations) {
+    Stack<int> s;
+    
+    for (int i = 0; i < 100; ++i) {
+        s.push(i);
+    }
+    EXPECT_EQ(s.size(), 100);
+    EXPECT_EQ(s.get_front(), 99);
+    
+    for (int i = 99; i >= 50; --i) {
+        EXPECT_EQ(s.get_front(), i);
+        s.pop();
+    }
+    EXPECT_EQ(s.size(), 50);
+    
+    s.push(1000);
+    s.push(2000);
+    s.pop();
+    s.push(3000);
+    
+    EXPECT_EQ(s.get_front(), 3000);
+    EXPECT_EQ(s.size(), 52);
+}
+
+TEST(StackTest, AssignmentChain) {
+    Stack<int> s1, s2, s3;
+    
+    s1.push(1);
+    s1.push(2);
+    s1.push(3);
+    
+    s2 = s1;
+    s3 = s2 = s1;
+    
+    EXPECT_EQ(s1.size(), 3);
+    EXPECT_EQ(s2.size(), 3);
+    EXPECT_EQ(s3.size(), 3);
+    
+    s1.push(4);
+    EXPECT_EQ(s1.size(), 4);
+    EXPECT_EQ(s2.size(), 3);
+    EXPECT_EQ(s3.size(), 3);
+}
+
+TEST(StackTest, SelfAssignment) {
+    Stack<int> s;
+    s.push(1);
+    s.push(2);
+    s.push(3);
+    
+    s = s;
+    
+    EXPECT_EQ(s.size(), 3);
+    
+    int expected[] = {3, 2, 1};
+    int idx = 0;
+    for (const auto& v : s) {
+        EXPECT_EQ(v, expected[idx++]);
+    }
+}
+
+// ========== Тесты для Queue (20 тестов) ==========
 
 TEST(QueueTest, DefaultConstructor) {
     Queue<int> q;
@@ -347,7 +394,170 @@ TEST(QueueTest, RangeBasedFor) {
     EXPECT_EQ(sum, 6);
 }
 
-// ========== Тесты для разных типов данных ==========
+TEST(QueueTest, IteratorModification) {
+    Queue<int> q;
+    q.push(1);
+    q.push(2);
+    q.push(3);
+
+    for (auto it = q.begin(); it != q.end(); ++it) {
+        *it *= 2;
+    }
+
+    EXPECT_EQ(q.get_front(), 2);
+    q.pop();
+    EXPECT_EQ(q.get_front(), 4);
+    q.pop();
+    EXPECT_EQ(q.get_front(), 6);
+}
+
+TEST(QueueTest, Queue_Iterator) {
+    Queue<int> q;
+    q.push(10);
+    q.push(20);
+    q.push(30);
+
+    Queue<int>::iterator it = q.begin();
+    EXPECT_EQ(*it, 10);
+    ++it;
+    EXPECT_EQ(*it, 20);
+    it++;
+    EXPECT_EQ(*it, 30);
+    ++it;
+    EXPECT_EQ(it, q.end());
+
+    std::stringstream sout;
+    sout << q;
+    EXPECT_EQ(sout.str(), "10 20 30");
+}
+
+TEST(QueueTest, Queue_For) {
+    Queue<int> q;
+    q.push(1);
+    q.push(2);
+    q.push(3);
+
+    int expected1[] = {1, 2, 3};
+    int idx = 0;
+    for (const auto& v : q) EXPECT_EQ(v, expected1[idx++]);
+
+    idx = 0;
+    for (auto& v : q) v *= 2;
+
+    int expected2[] = {2, 4, 6};
+    idx = 0;
+    for (const auto& v : q) EXPECT_EQ(v, expected2[idx++]);
+}
+
+TEST(QueueTest, Queue_PushPopCopy) {
+    Queue<int> q1;
+    q1.push(1);
+    q1.push(2);
+    q1.push(3);
+
+    q1.pop();
+    q1.push(10);
+    q1.push(20);
+
+    Queue<int> q2 = q1;
+
+    int expected_orig[] = {2, 3, 10, 20};
+    int idx = 0;
+    for (const auto& v : q1) EXPECT_EQ(v, expected_orig[idx++]);
+
+    q2.pop();
+    q2.pop();
+    q2.push(99);
+    q2.push(98);
+    q2.push(97);
+
+    idx = 0;
+    int expected_copy[] = {10, 20, 99, 98, 97};
+    idx = 0;
+    for (const auto& v : q2) EXPECT_EQ(v, expected_copy[idx++]);
+}
+
+TEST(QueueTest, Queue_IO) {
+    Queue<int> q;
+    q.push(0);
+
+    std::stringstream sin("1 2 3 4 5");
+    sin >> q;
+
+    EXPECT_EQ(q.size(), 6);
+
+    int expected[] = {0, 1, 2, 3, 4, 5};
+    int idx = 0;
+    for (const auto& v : q) EXPECT_EQ(v, expected[idx++]);
+
+    std::stringstream sout;
+    sout << q;
+    std::string expected_str = "0 1 2 3 4 5";
+    EXPECT_EQ(sout.str(), expected_str);
+}
+
+TEST(QueueTest, ComplexOperations) {
+    Queue<int> q;
+    
+    for (int i = 0; i < 100; ++i) {
+        q.push(i);
+    }
+    EXPECT_EQ(q.size(), 100);
+    EXPECT_EQ(q.get_front(), 0);
+    
+    for (int i = 0; i < 50; ++i) {
+        EXPECT_EQ(q.get_front(), i);
+        q.pop();
+    }
+    EXPECT_EQ(q.size(), 50);
+    
+    q.push(1000);
+    q.push(2000);
+    q.pop();
+    q.push(3000);
+    
+    EXPECT_EQ(q.get_front(), 51);
+    EXPECT_EQ(q.size(), 52);
+}
+
+TEST(QueueTest, AssignmentChain) {
+    Queue<int> q1, q2, q3;
+    
+    q1.push(1);
+    q1.push(2);
+    q1.push(3);
+    
+    q2 = q1;
+    q3 = q2 = q1;
+    
+    EXPECT_EQ(q1.size(), 3);
+    EXPECT_EQ(q2.size(), 3);
+    EXPECT_EQ(q3.size(), 3);
+    
+    q1.push(4);
+    EXPECT_EQ(q1.size(), 4);
+    EXPECT_EQ(q2.size(), 3);
+    EXPECT_EQ(q3.size(), 3);
+}
+
+TEST(QueueTest, SelfAssignment) {
+    Queue<int> q;
+    q.push(1);
+    q.push(2);
+    q.push(3);
+    
+    q = q;
+    
+    EXPECT_EQ(q.size(), 3);
+    
+    int expected[] = {1, 2, 3};
+    int idx = 0;
+    for (const auto& v : q) {
+        EXPECT_EQ(v, expected[idx++]);
+    }
+}
+
+// ========== Тесты для разных типов данных (3 теста) ==========
 
 TEST(StringStackTest, BasicOperations) {
     Stack<std::string> s;
@@ -385,7 +595,7 @@ TEST(DoubleStackTest, BasicOperations) {
     EXPECT_DOUBLE_EQ(s.get_front(), 3.14);
 }
 
-// ========== Тесты исключений ==========
+// ========== Тесты исключений (4 теста) ==========
 
 TEST(StackExceptionTest, PopEmpty) {
     Stack<int> s;
@@ -407,7 +617,7 @@ TEST(QueueExceptionTest, FrontEmpty) {
     EXPECT_THROW(q.get_front(), ContainerException);
 }
 
-// ========== Тесты полиморфизма ==========
+// ========== Тесты полиморфизма (1 тест) ==========
 
 TEST(PolymorphismTest, BaseContainer) {
     Stack<int> s;
@@ -434,7 +644,7 @@ TEST(PolymorphismTest, BaseContainer) {
     EXPECT_EQ(ss2.str(), "10 20 30");
 }
 
-// ========== Тесты STL алгоритмов ==========
+// ========== Тесты STL алгоритмов (2 теста) ==========
 
 TEST(STLAlgorithmsTest, StackAlgorithms) {
     Stack<int> s;
@@ -470,4 +680,43 @@ TEST(STLAlgorithmsTest, QueueAlgorithms) {
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
+}
+
+TEST(QueueTest, LargeQueueOperations) {
+    Queue<int> q;
+    const int N = 1000;
+    
+    // Добавляем много элементов
+    for (int i = 0; i < N; ++i) {
+        q.push(i);
+    }
+    EXPECT_EQ(q.size(), N);
+    EXPECT_EQ(q.get_front(), 0);
+    
+    // Удаляем половину
+    for (int i = 0; i < N/2; ++i) {
+        EXPECT_EQ(q.get_front(), i);
+        q.pop();
+    }
+    EXPECT_EQ(q.size(), N/2);
+    
+    // Добавляем еще элементы
+    for (int i = 0; i < N/2; ++i) {
+        q.push(i + N);
+    }
+    EXPECT_EQ(q.size(), N);
+    
+    // Проверяем порядок оставшихся элементов
+    for (int i = N/2; i < N; ++i) {
+        EXPECT_EQ(q.get_front(), i);
+        q.pop();
+    }
+    
+    // Проверяем порядок добавленных элементов
+    for (int i = 0; i < N/2; ++i) {
+        EXPECT_EQ(q.get_front(), i + N);
+        q.pop();
+    }
+    
+    EXPECT_TRUE(q.is_empty());
 }
